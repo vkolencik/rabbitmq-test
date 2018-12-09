@@ -1,35 +1,28 @@
-import com.rabbitmq.client.*
-
 fun main(args: Array<String>) {
-    Producer().produce("hello, world")
+
+    directDefaultExchange()
+
 }
 
-class Producer {
+private fun directDefaultExchange() {
+    val queueName = "test-queue"
+    Consumer(queueName).use {
+        Consumer(queueName).use {
+            Producer().use { producer ->
+                /*
+                 Direct exchange --> routing key directly states the queue name.
+                 This binding is default, so it doesn't need to be declared.
+                  */
 
-    private val channel: Channel
-    private val exchangeName = "hello-exchange"
-    private val queueName = "hello-queue"
-
-    init {
-        val factory = ConnectionFactory()
-        val conn = factory.newConnection()
-        channel = conn.createChannel()
-        channel.exchangeDeclare(exchangeName, BuiltinExchangeType.DIRECT, true)
-        channel.queueDeclare(queueName, true, false, false, emptyMap())
-        channel.queueBind(queueName, exchangeName, "hola")
-
-        channel.basicConsume(
-            queueName,
-            false,
-            DeliverCallback { consumerTag, message ->
-                println("Message: ${String(message.body)}")
-                channel.basicAck(message.envelope.deliveryTag, true)
-            },
-            CancelCallback {  }
-        )
-    }
-
-    fun produce(msg: String) {
-        channel.basicPublish(exchangeName, "hola", null, msg.toByteArray())
+                producer.produce("Hello Prague", queueName)
+                producer.produce("Hello Berlin", queueName)
+                producer.produce("Hello Paris", queueName)
+                producer.produce("Hello London", queueName)
+                producer.produce("Hello Tokyo", queueName)
+                producer.produce("Hello Kairo", queueName)
+                producer.produce("Hello New York", queueName)
+            }
+        }
     }
 }
+
