@@ -8,6 +8,8 @@ fun main(args: Array<String>) {
 
     fanoutExchange()
 
+    topicExchange()
+
 }
 
 /**
@@ -95,4 +97,45 @@ fun fanoutExchange() {
             }
         }
     }
+}
+
+/**
+ * Topic exchange: routing key consists of two parts separated by a dot: {hello or goodbye}.{eu or world}.
+ * Creates several queues for various combinations:
+ *  - all hellos
+ *  - all goodbyes
+ *  - both hellos and goodbyes but only for european cities
+ *  - all greetings
+ */
+fun topicExchange() {
+    println()
+    println("Topic exchange")
+
+    val helloQueueName = "test-topic-hello-queue"
+    val goodbyeQueueName = "test-topic-goodbye-queue"
+    val allEuropeanGreetingsQueueName = "test-topic-greeting-queue"
+    val allGreetingsQueueName = "test-topic-greetings-queue"
+    val exchangeName = "test-topic-exchange"
+
+    Consumer(helloQueueName, "Hellos").use {
+        Consumer(goodbyeQueueName, "Goodbyes").use {
+            Consumer(allEuropeanGreetingsQueueName, "European").use {
+                Consumer(allGreetingsQueueName, "Greetings").use {
+                    Producer(exchangeName, BuiltinExchangeType.TOPIC,
+                        Producer.Binding(helloQueueName, "hello.*"),
+                        Producer.Binding(goodbyeQueueName, "goodbye.*"),
+                        Producer.Binding(allEuropeanGreetingsQueueName, "*.eu"),
+                        Producer.Binding(allGreetingsQueueName, "#")).use { producer ->
+
+                        producer.produce("Hello Prague", "hello.eu")
+                        producer.produce("Hello Berlin", "hello.eu")
+                        producer.produce("Goodbye Prague", "goodbye.eu")
+                        producer.produce("Goodbye Bangkok", "goodbye.world")
+                        producer.produce("Hello NY", "hello.world")
+                    }
+                }
+            }
+        }
+    }
+
 }
