@@ -60,6 +60,7 @@ fun directExchange() {
                 BuiltinExchangeType.DIRECT,
                 Producer.Binding(queueName, routingKey)
             ).use { producer ->
+
                 producer.produce("Hello Prague", routingKey)
                 producer.produce("Hello Berlin", routingKey)
                 producer.produce("Hello Paris", routingKey)
@@ -91,6 +92,7 @@ fun fanoutExchange() {
                 Producer.Binding(queue1Name, routingKey),
                 Producer.Binding(queue2Name, routingKey)
             ).use { producer ->
+
                 // Supplied routing key is ignored, so we can use whatever:
                 producer.produce("Hello Prague", "whatever1")
                 producer.produce("Hello Berlin", "whatever2")
@@ -117,15 +119,17 @@ fun topicExchange() {
     val allGreetingsQueueName = "test-topic-greetings-queue"
     val exchangeName = "test-topic-exchange"
 
+    val bindings = arrayOf(
+        Producer.Binding(helloQueueName, "hello.*"),
+        Producer.Binding(goodbyeQueueName, "goodbye.*"),
+        Producer.Binding(allEuropeanGreetingsQueueName, "*.eu"),
+        Producer.Binding(allGreetingsQueueName, "#"))
+
     Consumer(helloQueueName, "Hellos").use {
         Consumer(goodbyeQueueName, "Goodbyes").use {
             Consumer(allEuropeanGreetingsQueueName, "European").use {
                 Consumer(allGreetingsQueueName, "Greetings").use {
-                    Producer(exchangeName, BuiltinExchangeType.TOPIC,
-                        Producer.Binding(helloQueueName, "hello.*"),
-                        Producer.Binding(goodbyeQueueName, "goodbye.*"),
-                        Producer.Binding(allEuropeanGreetingsQueueName, "*.eu"),
-                        Producer.Binding(allGreetingsQueueName, "#")).use { producer ->
+                    Producer(exchangeName, BuiltinExchangeType.TOPIC, *bindings).use { producer ->
 
                         producer.produce("Hello Prague", "hello.eu")
                         producer.produce("Hello Berlin", "hello.eu")
