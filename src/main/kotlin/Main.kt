@@ -17,8 +17,6 @@ fun main(args: Array<String>) {
  *     Creates two consumers so that the round-robin delivery can be observed.
  */
 private fun defaultExchange() {
-    /*
-     */
 
     println()
     println("Default exchange")
@@ -91,8 +89,9 @@ fun fanoutExchange() {
                 Producer.Binding(queue1Name, routingKey),
                 Producer.Binding(queue2Name, routingKey)
             ).use { producer ->
-                producer.produce("Hello Prague", routingKey)
-                producer.produce("Hello Berlin", routingKey)
+                // Supplied routing key is ignored, so we can use whatever:
+                producer.produce("Hello Prague", "whatever1")
+                producer.produce("Hello Berlin", "whatever2")
             }
         }
     }
