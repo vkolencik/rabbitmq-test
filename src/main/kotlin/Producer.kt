@@ -6,6 +6,7 @@ import java.io.Closeable
 @Suppress("CanBeParameter")
 class Producer(
     private val exchangeName: String = "",
+    vararg bindings: Binding,
     private val exchangeType: BuiltinExchangeType = BuiltinExchangeType.DIRECT
 ) : Closeable {
 
@@ -15,7 +16,10 @@ class Producer(
     init {
         if (exchangeName != "") // don't "declare" the default exchange
             channel.exchangeDeclare(exchangeName, exchangeType, true)
+
+        bindings.forEach { channel.queueBind(it.queueName, exchangeName, it.routingKey)}
     }
+
 
     fun produce(msg: String, routingKey: String) {
         channel.basicPublish(exchangeName, routingKey, null, msg.toByteArray())
@@ -25,4 +29,6 @@ class Producer(
         connection.close()
         // (channels are closed automatically with the connection)
     }
+
+    data class Binding(val queueName: String, val routingKey: String)
 }
