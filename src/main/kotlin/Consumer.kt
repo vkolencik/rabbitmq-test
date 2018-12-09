@@ -1,9 +1,5 @@
 import com.github.ajalt.mordant.TermColors
-import com.rabbitmq.client.CancelCallback
-import com.rabbitmq.client.Channel
-import com.rabbitmq.client.ConnectionFactory
-import com.rabbitmq.client.DeliverCallback
-import com.rabbitmq.client.Delivery
+import com.rabbitmq.client.*
 import java.io.Closeable
 
 @Suppress("CanBeParameter")
@@ -12,13 +8,14 @@ open class Consumer(private val queueName: String, private val consumerName: Str
         private var nextConsumerId = 1
         private var nextConsumerColorIndex = 0
 
-        private val colors = with (TermColors()) {
+        private val colors = with(TermColors()) {
             arrayOf(
                 brightBlue,
                 brightRed,
                 brightGreen,
                 yellow,
-                brightMagenta)
+                brightMagenta
+            )
         }
     }
 
@@ -43,11 +40,17 @@ open class Consumer(private val queueName: String, private val consumerName: Str
                     if (consumerName != null)
                         consumerDescription += " - $consumerName"
 
-                    println(color("Consumer $consumerDescription received message (${message.envelope.deliveryTag}): ${String(message.body)}"))
+                    println(
+                        color(
+                            "Consumer $consumerDescription received message (${message.envelope.deliveryTag}): ${String(
+                                message.body
+                            )}"
+                        )
+                    )
                     channel.basicAck(message.envelope.deliveryTag, false)
                 }
             },
-            CancelCallback {  }
+            CancelCallback { }
         )
     }
 
