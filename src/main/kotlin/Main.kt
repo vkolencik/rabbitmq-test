@@ -10,11 +10,15 @@ fun main(args: Array<String>) {
 
 }
 
+/**
+ *     Default exchange: routing key directly states the queue name.
+ *     This binding is default, so it doesn't need to be declared.
+ *
+ *     Creates two consumers so that the round-robin delivery can be observed.
+ */
 private fun defaultExchange() {
     /*
-    Default exchange --> routing key directly states the queue name.
-    This binding is default, so it doesn't need to be declared.
-      */
+     */
 
     println()
     println("Default exchange")
@@ -33,10 +37,15 @@ private fun defaultExchange() {
     }
 }
 
+
+/**
+ * Direct exchange: declares direct exchange and adds binding that sends all messages with a given routing key to the
+ * specified queue.
+ *
+ * Creates two consumers for the single queue so that the round-robin delivery can be observed.
+ */
 fun directExchange() {
-    /*
-    Declare direct exchange and add binding that sends all messages with a given routing key to a specified queue.
-     */
+
     val queueName = "test-queue"
     val exchangeName = "test-direct-exchange"
     val routingKey = "hola"
@@ -46,7 +55,11 @@ fun directExchange() {
 
     Consumer(queueName).use {
         Consumer(queueName).use {
-            Producer(exchangeName, BuiltinExchangeType.DIRECT, Producer.Binding(queueName, routingKey)).use { producer ->
+            Producer(
+                exchangeName,
+                BuiltinExchangeType.DIRECT,
+                Producer.Binding(queueName, routingKey)
+            ).use { producer ->
                 producer.produce("Hello Prague", routingKey)
                 producer.produce("Hello Berlin", routingKey)
                 producer.produce("Hello Paris", routingKey)
@@ -56,7 +69,12 @@ fun directExchange() {
     }
 }
 
+/**
+ * Fanout exchange: sends all messages with the given routing key to *two* different queues. Creates two consumers,
+ * one for each queue. Every sent message is consumed by both consumers, one from each queue.
+ */
 fun fanoutExchange() {
+
     val queue1Name = "test-fanout-queue-1"
     val queue2Name = "test-fanout-queue-2"
     val exchangeName = "test-fanout-exchange"
@@ -67,7 +85,12 @@ fun fanoutExchange() {
 
     Consumer(queue1Name).use {
         Consumer(queue2Name).use {
-            Producer(exchangeName, BuiltinExchangeType.FANOUT, Producer.Binding(queue1Name, routingKey), Producer.Binding(queue2Name, routingKey)).use { producer ->
+            Producer(
+                exchangeName,
+                BuiltinExchangeType.FANOUT,
+                Producer.Binding(queue1Name, routingKey),
+                Producer.Binding(queue2Name, routingKey)
+            ).use { producer ->
                 producer.produce("Hello Prague", routingKey)
                 producer.produce("Hello Berlin", routingKey)
             }
