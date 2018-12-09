@@ -1,3 +1,4 @@
+import com.github.ajalt.mordant.TermColors
 import com.rabbitmq.client.CancelCallback
 import com.rabbitmq.client.Channel
 import com.rabbitmq.client.ConnectionFactory
@@ -6,9 +7,18 @@ import com.rabbitmq.client.Delivery
 import java.io.Closeable
 
 @Suppress("CanBeParameter")
-open class Consumer(private val queueName: String) : Closeable {
+open class Consumer(private val queueName: String, private val name: String? = null) : Closeable {
     companion object {
-        var nextConsumerId = 1
+        private var nextConsumerId = 1
+        private var nextConsumerColorIndex = 0
+
+        private val colors = with(TermColors()){arrayOf(
+            brightBlue,
+            brightRed,
+            brightGreen,
+            yellow,
+            brightMagenta
+        )}
     }
 
     private val connection = ConnectionFactory().newConnection()
@@ -16,7 +26,8 @@ open class Consumer(private val queueName: String) : Closeable {
     @Suppress("MemberVisibilityCanBePrivate")
     protected val channel: Channel = connection.createChannel()
 
-    private val consumerId = Consumer.nextConsumerId++
+    private val consumerId = nextConsumerId++
+    private val color = colors[nextConsumerColorIndex++ % colors.size]
 
     init {
         channel.queueDeclare(queueName, false, false, false, emptyMap())
@@ -26,7 +37,12 @@ open class Consumer(private val queueName: String) : Closeable {
             false,
             DeliverCallback { _, message ->
                 if (beforeConsume(message)) {
-                    println("Consumer $consumerId received message (${message.envelope.deliveryTag}): ${String(message.body)}")
+
+                    var consumerDescription = consumerId.toString()
+                    if (name != null)
+                        consumerDescription += " - $name"
+
+                    println(color("Consumer $consumerDescription received message (${message.envelope.deliveryTag}): ${String(message.body)}"))
                     channel.basicAck(message.envelope.deliveryTag, false)
                 }
             },
