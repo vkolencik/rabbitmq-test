@@ -3,10 +3,9 @@ import com.rabbitmq.client.Channel
 import com.rabbitmq.client.ConnectionFactory
 import java.io.Closeable
 
-@Suppress("CanBeParameter")
 class Producer(
     private val exchangeName: String = "",
-    private val exchangeType: BuiltinExchangeType = BuiltinExchangeType.DIRECT,
+    exchangeType: BuiltinExchangeType = BuiltinExchangeType.DIRECT,
     vararg bindings: Binding
 ) : Closeable {
 

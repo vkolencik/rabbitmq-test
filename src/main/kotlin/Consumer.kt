@@ -7,7 +7,7 @@ import com.rabbitmq.client.Delivery
 import java.io.Closeable
 
 @Suppress("CanBeParameter")
-open class Consumer(private val queueName: String, private val name: String? = null) : Closeable {
+open class Consumer(private val queueName: String, private val consumerName: String? = null) : Closeable {
     companion object {
         private var nextConsumerId = 1
         private var nextConsumerColorIndex = 0
@@ -39,8 +39,8 @@ open class Consumer(private val queueName: String, private val name: String? = n
                 if (beforeConsume(message)) {
 
                     var consumerDescription = consumerId.toString()
-                    if (name != null)
-                        consumerDescription += " - $name"
+                    if (consumerName != null)
+                        consumerDescription += " - $consumerName"
 
                     println(color("Consumer $consumerDescription received message (${message.envelope.deliveryTag}): ${String(message.body)}"))
                     channel.basicAck(message.envelope.deliveryTag, false)
@@ -54,7 +54,8 @@ open class Consumer(private val queueName: String, private val name: String? = n
      * Can be overridden and modify consume behaviour. Returning <code>false</code> will abort the receiving process
      * (not even NACK will be sent).
      */
-    private fun beforeConsume(@Suppress("UNUSED_PARAMETER") message: Delivery?) = true
+    @Suppress("MemberVisibilityCanBePrivate")
+    protected fun beforeConsume(@Suppress("UNUSED_PARAMETER") message: Delivery?) = true
 
     override fun close() {
         connection.close()
