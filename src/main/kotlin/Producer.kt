@@ -15,7 +15,7 @@ class Producer(
 
     init {
         if (exchangeName != "") // don't "re-declare" the default exchange
-            channel.exchangeDeclare(exchangeName, exchangeType, true)
+            channel.exchangeDeclare(exchangeName, exchangeType, false)
 
         bindings.forEach { channel.queueBind(it.queueName, exchangeName, it.routingKey) }
     }

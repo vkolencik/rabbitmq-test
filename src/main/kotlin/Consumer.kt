@@ -19,7 +19,7 @@ open class Consumer(private val queueName: String) : Closeable {
     private val consumerId = Consumer.nextConsumerId++
 
     init {
-        channel.queueDeclare(queueName, true, false, false, emptyMap())
+        channel.queueDeclare(queueName, false, false, false, emptyMap())
 
         channel.basicConsume(
             queueName,
