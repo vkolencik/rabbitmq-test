@@ -12,13 +12,14 @@ open class Consumer(private val queueName: String, private val consumerName: Str
         private var nextConsumerId = 1
         private var nextConsumerColorIndex = 0
 
-        private val colors = with(TermColors()){arrayOf(
-            brightBlue,
-            brightRed,
-            brightGreen,
-            yellow,
-            brightMagenta
-        )}
+        private val colors = with (TermColors()) {
+            arrayOf(
+                brightBlue,
+                brightRed,
+                brightGreen,
+                yellow,
+                brightMagenta)
+        }
     }
 
     private val connection = ConnectionFactory().newConnection()
