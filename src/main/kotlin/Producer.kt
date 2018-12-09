@@ -6,18 +6,18 @@ import java.io.Closeable
 @Suppress("CanBeParameter")
 class Producer(
     private val exchangeName: String = "",
-    vararg bindings: Binding,
-    private val exchangeType: BuiltinExchangeType = BuiltinExchangeType.DIRECT
+    private val exchangeType: BuiltinExchangeType = BuiltinExchangeType.DIRECT,
+    vararg bindings: Binding
 ) : Closeable {
 
     private val connection = ConnectionFactory().newConnection()
     private val channel: Channel = connection.createChannel()
 
     init {
-        if (exchangeName != "") // don't "declare" the default exchange
+        if (exchangeName != "") // don't "re-declare" the default exchange
             channel.exchangeDeclare(exchangeName, exchangeType, true)
 
-        bindings.forEach { channel.queueBind(it.queueName, exchangeName, it.routingKey)}
+        bindings.forEach { channel.queueBind(it.queueName, exchangeName, it.routingKey) }
     }
 
 
